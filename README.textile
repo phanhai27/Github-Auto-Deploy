@@ -9,10 +9,10 @@ To set it up, do the following:
 * install python
 * copy the GitAutoDeploy.conf.json.example to GitAutoDeploy.conf.json. This file will be gitignored and can be environment specific.
 * enter the matching for your project(s) in the GitAutoDeploy.conf.json file
-* start the server by typing "python GitAutoDeploy.py" 
+* start the server by typing "python3 GitAutoDeploy.py" 
 * to run it as a daemon add ==--daemon-mode==
-* On the Github page go to a repository, then "Admin", "Service Hooks", 
-"Post-Receive URLs" and add the url of your machine + port (e.g. http://example.com:8001).
+* On the Github page go to a repository, then "Settings", "Webhooks", "Add webhook"
+"Payload URL" and add the url of your machine + port (e.g. http://example.com:8001).
 * Specify Content type as application/json
 
 You can test hook delivery by clicking redeliver existing hook delieveries.
