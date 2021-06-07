@@ -3,11 +3,14 @@
 	"repositories": 
 	[{
 		"url": "https://github.com/logsol/Test-Repo", 
-		"path": "/home/logsol/projects/Test-Repo",
-		"deploy": "echo deploying"
+		"path": "/home/logsol/projects/production/Test-Repo",
+		"branch" "master",
+		"deploy": "git pull origin master && echo deploying master branch"
 	}, 
 	{
-		"url": "https://github.com/logsol/Katharsis-Framework",
-		"path": "/home/logsol/projects/Katharsis-Framework"
+		"url": "https://github.com/logsol/Test-Repo", 
+		"path": "/home/logsol/projects/development/Test-Repo",
+		"branch" "develop",
+		"deploy": "git pull origin develop && echo deploying develop branch"
 	}]
 }

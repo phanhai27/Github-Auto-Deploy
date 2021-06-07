@@ -1,6 +1,6 @@
 !http://logsol.github.com/Github-Auto-Deploy/images/Github-Auto-Deploy.png!
 
-h1. What is it?
+h1. What is it? (Supported python3)
 
 This is a small HTTP server written in python. 
 It allows you to have a version of your project installed, that will be updated automatically on each Github push.
