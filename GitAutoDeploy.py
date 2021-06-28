@@ -2,10 +2,10 @@
 
 import json, sys, os
 from urllib.parse import urljoin
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import SimpleHTTPRequestHandler, HTTPServer
 from subprocess import call
 
-class GitAutoDeploy(BaseHTTPRequestHandler):
+class GitAutoDeploy(SimpleHTTPRequestHandler):
 
     CONFIG_FILEPATH = './GitAutoDeploy.conf.json'
     config = None
