@@ -56,6 +56,9 @@ class GitAutoDeploy(SimpleHTTPRequestHandler):
             for path in paths:
                 self.fetch(path)
                 self.deploy(path)
+    
+    def do_GET(self):
+        self.send_error(404, "File Not Found {}".format(self.path))
 
     def parseRequest(self):
         length = int(self.headers.get('content-length'))
