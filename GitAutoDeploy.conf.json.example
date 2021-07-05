@@ -4,13 +4,13 @@
 	[{
 		"url": "https://github.com/logsol/Test-Repo", 
 		"path": "/home/logsol/projects/production/Test-Repo",
-		"branch" "refs/heads/master",
+		"branch": "refs/heads/master",
 		"deploy": "git pull origin master && echo deploying master branch"
 	}, 
 	{
 		"url": "https://github.com/logsol/Test-Repo", 
 		"path": "/home/logsol/projects/development/Test-Repo",
-		"branch" "refs/heads/develop",
+		"branch": "refs/heads/develop",
 		"deploy": "git pull origin develop && echo deploying develop branch"
 	}]
 }

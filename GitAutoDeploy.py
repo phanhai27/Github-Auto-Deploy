@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
 import json, sys, os
-from urllib.parse import urljoin
+from socketserver import ThreadingMixIn
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 from subprocess import call
+
+class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
+    pass
 
 class GitAutoDeploy(SimpleHTTPRequestHandler):
 
@@ -124,8 +127,8 @@ def main():
             print('Github Autodeploy Service v0.2 started')
         else:
             print('Github Autodeploy Service v 0.2 started in daemon mode')
-             
-        server = HTTPServer(('', GitAutoDeploy.getConfig()['port']), GitAutoDeploy)
+        
+        server = ThreadingHTTPServer(("", GitAutoDeploy.getConfig()['port']), GitAutoDeploy)
         server.serve_forever()
     except (KeyboardInterrupt, SystemExit) as e:
         if(e): # wtf, why is this creating a new line?
