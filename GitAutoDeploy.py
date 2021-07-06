@@ -15,6 +15,8 @@ class GitAutoDeploy(SimpleHTTPRequestHandler):
     quiet = False
     daemon = False
 
+    urls = []
+
     @classmethod
     def getConfig(myClass):
         if(myClass.config == None):
@@ -51,10 +53,13 @@ class GitAutoDeploy(SimpleHTTPRequestHandler):
             self.respond(304)
             return
 
+        if not self.parseRequest():
+            self.respond(304)
+            return
+        
         self.respond(204)
 
-        urls = self.parseRequest()
-        for url in urls:
+        for url in self.urls:
             paths = self.getMatchingPaths(url)
             for path in paths:
                 self.fetch(path)
@@ -64,11 +69,16 @@ class GitAutoDeploy(SimpleHTTPRequestHandler):
         self.send_error(404, "File Not Found {}".format(self.path))
 
     def parseRequest(self):
-        length = int(self.headers.get('content-length'))
-        body = self.rfile.read(length)
-        payload = json.loads(body)
-        self.branch = payload['ref']
-        return [payload['repository']['url']]
+        try:
+            length = int(self.headers.get('content-length'))
+            body = self.rfile.read(length)
+            payload = json.loads(body)
+            self.branch = payload['ref']
+            self.urls = [payload['repository']['url']]
+        except:
+            return False
+
+        return True
 
     def getMatchingPaths(self, repoUrl):
         res = []
