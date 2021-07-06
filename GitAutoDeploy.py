@@ -62,7 +62,9 @@ class GitAutoDeploy(SimpleHTTPRequestHandler):
             self.respond(304)
             return
 
-        self.parseRequest() # to get body, branch and urls
+        if not self.parseRequest(): # to get body, branch and urls
+            self.respond(304)
+            return
 
         if self.secret is not None: # if security mode is on
             signature = self.headers.get("x-hub-signature-256", self.headers.get("x-hub-signature"))
@@ -93,7 +95,9 @@ class GitAutoDeploy(SimpleHTTPRequestHandler):
             self.branch = payload['ref']
             self.urls = [payload['repository']['url']]
         except:
-            print('[ERROR] Bad request')
+            return False
+        
+        return True
 
     def getMatchingPaths(self, repoUrl):
         res = []
