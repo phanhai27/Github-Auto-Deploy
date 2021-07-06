@@ -15,9 +15,9 @@ class GitAutoDeploy(SimpleHTTPRequestHandler):
     quiet = False
     daemon = False
 
-    body = None
+    body = bytes()
     branch = None
-    urls = None
+    urls = []
 
     secret = None
 
@@ -86,11 +86,14 @@ class GitAutoDeploy(SimpleHTTPRequestHandler):
         self.send_error(404, "File Not Found {}".format(self.path))
 
     def parseRequest(self):
-        length = int(self.headers.get('content-length'))
-        self.body = self.rfile.read(length)
-        payload = json.loads(self.body)
-        self.branch = payload['ref']
-        self.urls = [payload['repository']['url']]
+        try:
+            length = int(self.headers.get('content-length'))
+            self.body = self.rfile.read(length)
+            payload = json.loads(self.body)
+            self.branch = payload['ref']
+            self.urls = [payload['repository']['url']]
+        except:
+            print('[ERROR] Bad request')
 
     def getMatchingPaths(self, repoUrl):
         res = []
@@ -134,6 +137,10 @@ def validate_event(payload: bytes, signature: str, secret: str):
     # https://docs.github.com/en/developers/webhooks-and-events/securing-your-webhooks#validating-payloads-from-github
     sha256_signature_prefix = "sha256="
     sha1_signature_prefix = "sha1="
+    
+    if len(payload) == 0:
+        return False
+
     if signature.startswith(sha256_signature_prefix):
         hmac_sig = hmac.new(
             secret.encode("UTF-8"), msg=payload, digestmod="sha256"
