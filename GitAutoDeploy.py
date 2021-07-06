@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import json, sys, os
+import json, sys, os, hmac
 from socketserver import ThreadingMixIn
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 from subprocess import call
@@ -14,6 +14,12 @@ class GitAutoDeploy(SimpleHTTPRequestHandler):
     config = None
     quiet = False
     daemon = False
+
+    body = None
+    branch = None
+    urls = None
+
+    secret = None
 
     @classmethod
     def getConfig(myClass):
@@ -35,7 +41,12 @@ class GitAutoDeploy(SimpleHTTPRequestHandler):
                 if not os.path.isdir(os.path.join(repository['path'], '.git')) \
                    and not os.path.isdir(os.path.join(repository['path'], 'objects')):
                     sys.exit('Directory ' + repository['path'] + ' is not a Git repository')
-
+        
+        try:
+            myClass.secret = myClass.config['secret']
+        except:
+            print('[WARNING] No secret key. Security mode is off. Not validating Github signature.')
+        
         return myClass.config
 
     def do_POST(self):
@@ -51,10 +62,21 @@ class GitAutoDeploy(SimpleHTTPRequestHandler):
             self.respond(304)
             return
 
+        self.parseRequest() # to get body, branch and urls
+
+        if self.secret is not None: # if security mode is on
+            signature = self.headers.get("x-hub-signature-256", self.headers.get("x-hub-signature"))
+            if signature is not None:
+                if not validate_event(self.body, signature=signature, secret=self.secret):
+                    self.respond(304)
+                    return
+            else:
+                self.respond(304)
+                return
+        
         self.respond(204)
 
-        urls = self.parseRequest()
-        for url in urls:
+        for url in self.urls:
             paths = self.getMatchingPaths(url)
             for path in paths:
                 self.fetch(path)
@@ -65,10 +87,10 @@ class GitAutoDeploy(SimpleHTTPRequestHandler):
 
     def parseRequest(self):
         length = int(self.headers.get('content-length'))
-        body = self.rfile.read(length)
-        payload = json.loads(body)
+        self.body = self.rfile.read(length)
+        payload = json.loads(self.body)
         self.branch = payload['ref']
-        return [payload['repository']['url']]
+        self.urls = [payload['repository']['url']]
 
     def getMatchingPaths(self, repoUrl):
         res = []
@@ -106,6 +128,29 @@ class GitAutoDeploy(SimpleHTTPRequestHandler):
                     elif not self.quiet:
                         print('Push to different branch (%s != %s), not deploying' % (branch, self.branch))
                 break
+
+def validate_event(payload: bytes, signature: str, secret: str):
+    """Validate the signature of a webhook event."""
+    # https://docs.github.com/en/developers/webhooks-and-events/securing-your-webhooks#validating-payloads-from-github
+    sha256_signature_prefix = "sha256="
+    sha1_signature_prefix = "sha1="
+    if signature.startswith(sha256_signature_prefix):
+        hmac_sig = hmac.new(
+            secret.encode("UTF-8"), msg=payload, digestmod="sha256"
+        ).hexdigest()
+        calculated_sig = sha256_signature_prefix + hmac_sig
+    elif signature.startswith(sha1_signature_prefix):
+        hmac_sig = hmac.new(
+            secret.encode("UTF-8"), msg=payload, digestmod="sha1"
+        ).hexdigest()
+        calculated_sig = sha1_signature_prefix + hmac_sig
+    else:
+        return False
+    
+    if not hmac.compare_digest(signature, calculated_sig):
+        return False
+    
+    return True
 
 def main():
     try:

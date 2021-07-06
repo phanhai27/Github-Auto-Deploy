@@ -1,16 +1,17 @@
 {
 	"port": 8001, 
+	"secret": "If you don't need to check the Github signature, you can delete this secret field.",
 	"repositories": 
 	[{
 		"url": "https://github.com/logsol/Test-Repo", 
 		"path": "/home/logsol/projects/production/Test-Repo",
 		"branch": "refs/heads/master",
-		"deploy": "git pull origin master && echo deploying master branch"
+		"deploy": "git pull origin master && echo deployed master branch"
 	}, 
 	{
 		"url": "https://github.com/logsol/Test-Repo", 
 		"path": "/home/logsol/projects/development/Test-Repo",
 		"branch": "refs/heads/develop",
-		"deploy": "git pull origin develop && echo deploying develop branch"
+		"deploy": "git pull origin develop && echo deployed develop branch"
 	}]
 }
